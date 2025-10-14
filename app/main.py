@@ -2,7 +2,6 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import router
 from app.config import settings
 
 # Create FastAPI app
@@ -24,10 +23,10 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(router, prefix="/api/v1", tags=["debate"])
+# app.include_router(router, prefix="/api/v1", tags=["debate"])
 
 
-@app.get("/debate")
+@app.get("/")
 async def root():
     """Root endpoint."""
     return {
@@ -39,7 +38,7 @@ async def root():
 
 
 # For Vercel deployment
-handler = app
+# handler = app
 
 if __name__ == "__main__":
     import uvicorn
