@@ -27,7 +27,7 @@ app.add_middleware(
 app.include_router(router, prefix="/api/v1", tags=["debate"])
 
 
-@app.get("/")
+@app.get("/debate")
 async def root():
     """Root endpoint."""
     return {
