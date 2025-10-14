@@ -34,7 +34,7 @@ async def root():
         "service": settings.app_name,
         "version": settings.app_version,
         "status": "running",
-        "docs": "/docs"
+        #"docs": "/docs"
     }
 
 

@@ -26,7 +26,13 @@ class Conversation:
     def get_recent_messages(self, count: int = 5) -> List[Message]:
         """Get the most recent messages (up to count pairs)."""
         # Return last 'count' messages from each side (up to 2*count total)
-        return self.messages[-count * 2:] if len(self.messages) > count * 2 else self.messages
+        users = [m for m in self.messages if m.role == MessageRole.USER][-count:]
+        bots  = [m for m in self.messages if m.role == MessageRole.BOT][-count:]
+        # merge by original sequence
+        keep = set(id(x) for x in users + bots)
+        merged = [m for m in self.messages if id(m) in keep]
+        return merged[-(count*2):]
+    #return self.messages[-count * 2:] if len(self.messages) > count * 2 else self.messages
     
     def get_full_history(self) -> List[Message]:
         """Get all messages in the conversation."""
@@ -111,6 +117,9 @@ class ConversationManager:
         if "flat" in message_lower and "earth" in message_lower:
             topic = "Shape of the Earth"
             stance = "pro-flat-earth" if "is flat" in message_lower or "flat earth" in message_lower else "against-flat-earth"
+        elif "sun" in message_lower and ("west" in message_lower or "east" in message_lower):
+            topic = "Sun's Rising Direction"
+            stance = "pro-sun-rises-west" if "west" in message_lower else "pro-sun-rises-east"
         elif "climate" in message_lower:
             topic = "Climate Change"
             stance = "pro-climate-action" if "real" in message_lower or "happening" in message_lower else "climate-skeptic"

@@ -1,0 +1,628 @@
+{
+  "info": {
+    "name": "Kopi Debate Bot API Tests",
+    "description": "Comprehensive test collection for the debate bot API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Test 1: Flat Earth Debate",
+      "item": [
+        {
+          "name": "1. Start Flat Earth Conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has conversation_id\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.conversation_id).to.exist;",
+                  "    pm.collectionVariables.set(\"conversation_id\", jsonData.conversation_id);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has messages array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.be.an('array');",
+                  "    pm.expect(jsonData.message.length).to.equal(2);",
+                  "});",
+                  "",
+                  "pm.test(\"Bot agrees with flat earth position\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var botMessage = jsonData.message[1].message.toLowerCase();",
+                  "    pm.expect(jsonData.message[1].role).to.equal('bot');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": null,\n  \"message\": \"I believe the Earth is flat and I can prove it with simple observations\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            },
+            "description": "Start a new conversation about flat earth theory. Bot should take the position that earth is flat."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Challenge - Satellite Images",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Bot maintains position\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{conversation_id}}\",\n  \"message\": \"But what about satellite images showing Earth as a sphere?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            },
+            "description": "Challenge the bot's position with satellite evidence"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Challenge - Ships on Horizon",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{conversation_id}}\",\n  \"message\": \"How do you explain ships disappearing over the horizon bottom-first?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Challenge - Scientists Consensus",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{conversation_id}}\",\n  \"message\": \"Thousands of scientists have measured Earth's curvature. Are they all lying?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. Challenge - Gravity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{conversation_id}}\",\n  \"message\": \"What about gravity? How does it work on a flat Earth?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6. Challenge - Time Zones",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{conversation_id}}\",\n  \"message\": \"How do you explain different time zones if the Earth is flat?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Test 2: Climate Change Debate",
+      "item": [
+        {
+          "name": "1. Start Climate Debate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"climate_conversation_id\", jsonData.conversation_id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": null,\n  \"message\": \"Climate change is just a natural cycle, humans have nothing to do with it\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Challenge - CO2 Levels",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{climate_conversation_id}}\",\n  \"message\": \"But CO2 levels are at record highs according to ice core data from Antarctica\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Challenge - Scientific Consensus",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{climate_conversation_id}}\",\n  \"message\": \"97% of climate scientists agree that humans are causing climate change\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Challenge - Melting Ice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{climate_conversation_id}}\",\n  \"message\": \"Arctic ice is melting at unprecedented rates. How is this natural?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. Challenge - Industrial Revolution",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{climate_conversation_id}}\",\n  \"message\": \"The correlation between industrial activity and temperature rise is clear\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Test 3: Vaccines Debate",
+      "item": [
+        {
+          "name": "1. Start Vaccine Debate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"vaccine_conversation_id\", jsonData.conversation_id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": null,\n  \"message\": \"Natural immunity is superior to vaccines in every way\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Challenge - Eradicated Diseases",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{vaccine_conversation_id}}\",\n  \"message\": \"Vaccines have eradicated smallpox and nearly eliminated polio\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Challenge - Herd Immunity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{vaccine_conversation_id}}\",\n  \"message\": \"What about people who can't get natural immunity due to compromised immune systems?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Test 4: Pineapple Pizza",
+      "item": [
+        {
+          "name": "1. Start Pizza Debate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"pizza_conversation_id\", jsonData.conversation_id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": null,\n  \"message\": \"Pineapple on pizza is an abomination and ruins Italian cuisine\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Challenge - Sweet & Savory",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{pizza_conversation_id}}\",\n  \"message\": \"Why is sweet and savory okay in other dishes but not pizza?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error Handling Tests",
+      "item": [
+        {
+          "name": "Invalid Conversation ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Error message present\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.detail).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"invalid-uuid-12345-67890\",\n  \"message\": \"This should fail\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Empty Message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": null,\n  \"message\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Missing Message Field",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/debate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "debate"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/health",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "health"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "conversation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "climate_conversation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "vaccine_conversation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pizza_conversation_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
+

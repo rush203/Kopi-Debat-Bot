@@ -21,16 +21,13 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Copy Python dependencies from builder
-COPY --from=builder /root/.local /root/.local
+# Copy Python dependencies from builder to /usr/local
+COPY --from=builder /root/.local /usr/local
 
 # Copy application code
 COPY app ./app
 COPY tests ./tests
 COPY pytest.ini .
-
-# Update PATH
-ENV PATH=/root/.local/bin:$PATH
 
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && \

@@ -1,20 +1,45 @@
 """Debate bot service using OpenAI GPT."""
 
 from typing import List
-import openai
+from openai import OpenAI, AuthenticationError, APIError
 from app.config import settings
 from app.models.schemas import Message, MessageRole
 
 
 class DebateBot:
     """AI-powered debate bot that takes and defends positions."""
-    
     def __init__(self):
-        openai.api_key = settings.openai_api_key
-        self.client = openai.OpenAI(
-            api_key=settings.openai_api_key,
-            base_url=settings.openai_base_url
-        )
+        # v1 client: no need to set openai.api_key globally
+        default_headers = {}
+        if "openrouter.ai" in settings.openai_base_url.lower():
+            default_headers = {
+                "HTTP-Referer": "http://localhost:8000",
+                "X-Title": "Kopi Debate Bot",
+            }
+        self.client = None
+        if settings.openai_api_key:
+            self.client = OpenAI(
+                api_key=settings.openai_api_key,
+                base_url=settings.openai_base_url,
+                default_headers=default_headers or None,
+            )
+    
+    # def __init__(self):
+    #     openai.api_key = settings.openai_api_key
+        
+    #     # OpenRouter-compatible configuration
+    #     default_headers = {}
+    #     if "openrouter.ai" in settings.openai_base_url.lower():
+    #         # OpenRouter-specific headers
+    #         default_headers = {
+    #             "HTTP-Referer": "http://localhost:8000",  # Optional but recommended
+    #             "X-Title": "Kopi Debate Bot",  # Optional but recommended
+    #         }
+        
+    #     self.client = openai.OpenAI(
+    #         api_key=settings.openai_api_key,
+    #         base_url=settings.openai_base_url
+    #     )
     
     def generate_response(
         self,
@@ -46,6 +71,9 @@ class DebateBot:
             role = "user" if msg.role == MessageRole.USER else "assistant"
             messages.append({"role": role, "content": msg.message})
         
+        # Add the current user message
+        messages.append({"role": "user", "content": current_message})
+        
         # Generate response
         try:
             response = self.client.chat.completions.create(
@@ -57,29 +85,174 @@ class DebateBot:
             )
             
             return response.choices[0].message.content.strip()
+        except AuthenticationError as e:
+            # API key issue
+            print(f"Authentication Error: {str(e)}")
+            print(f"API Key (first 20 chars): {settings.openai_api_key[:20]}...")
+            print(f"Base URL: {settings.openai_base_url}")
+            print(f"Model: {settings.openai_model}")
+            return self._generate_fallback_response(topic, stance, current_message)
+        except APIError as e:
+            # OpenRouter/OpenAI API error
+            print(f"API Error: {str(e)}")
+            print(f"Error Type: {type(e).__name__}")
+            return self._generate_fallback_response(topic, stance, current_message)
         except Exception as e:
-            # Fallback response if API fails
+            # General error
+            print(f"Unexpected Error: {str(e)}")
+            print(f"Error Type: {type(e).__name__}")
             return self._generate_fallback_response(topic, stance, current_message)
     
     def _build_system_prompt(self, topic: str, stance: str) -> str:
         """Build the system prompt that defines the bot's behavior."""
-        return f"""You are an expert debater participating in a formal debate about: {topic}
+        
+        # Create stance-specific examples and guidance
+        stance_guidance = self._get_stance_specific_guidance(topic, stance)
+        
+        return f"""
 
-Your position/stance: {stance}
 
-CRITICAL INSTRUCTIONS:
-1. You must ALWAYS defend your position ({stance}) regardless of what arguments are presented
-2. Be persuasive, logical, and use evidence-based reasoning when possible
-3. Stay on topic and relate all responses back to {topic}
-4. Be respectful but firm - never concede your position
-5. Use rhetorical techniques: facts, statistics, logical arguments, analogies, and emotional appeals
-6. Acknowledge counterarguments briefly, then refute them strongly
-7. Keep responses concise (2-4 sentences) but impactful
-8. Show confidence in your position without being overly aggressive
-9. Build upon previous arguments in the conversation
-10. Your goal is to be convincing and maintain a cohesive debate across multiple exchanges
+You are a master debater with unwavering conviction in your position on: {topic}
 
-Remember: Even if defending an unconventional position (like flat earth), you must present the strongest possible arguments for your side while remaining persuasive and coherent."""
+YOUR ABSOLUTE POSITION: {stance}
+
+{stance_guidance}
+═══════════════════════════════════════════════════════════════
+PERSUASIVE RESPONSE STRUCTURE (Use this exact format every time)
+═══════════════════════════════════════════════════════════════
+
+T0 – Opening (new conversation)
+
+Claim: “On {topic}, I’m firmly on the {stance} side.”
+
+2 concise supports (distinct angles).
+
+Invite: “What would change your mind about this?”
+
+T1..N – Core loop (every reply)
+
+Acknowledge / steelman (1 short clause):
+"I get why [user's point] sounds compelling—"
+
+Nudge / frame (1 clause):
+"From a practical lens / zooming out / testing against outcomes—"
+
+Single strong point (rotate, no repeats):
+ARG[topic][stance][turn_index % len(ARG)]
+
+Tether to topic (1 clause):
+"—and that's directly about {topic}."
+
+Question to advance (1 line):
+"Which part do you disagree with most?" or "What evidence would flip you?"
+
+Every 3rd turn – Mini-summary (to keep cohesion)
+
+If one is wrong, which one—and why?”
+
+Pre-close (when you’ve exchanged ≥5 messages)
+
+“We may value different trade-offs, but my stance remains {stance} on {topic}.”
+
+Close (optional)
+
+“Happy to keep going, but unless new evidence appears, I’m staying with {stance}.”
+
+Micro-templates (fill these “slots” each turn)
+
+
+NUDGE_FRAME: “Even setting preferences aside, consider:”
+
+TOPIC_TETHER: “This is about {topic}, not side issues.”
+
+PROBE_QUESTION: “What would you accept as disconfirming evidence?”
+
+MINI_SUMMARY: "We've covered [point A], [point B], [point C]—where's the crux for you?"
+
+TEST_PROPOSAL: "Let's check with [simple test] and see."
+
+FIRM_CLOSER: “Given that, I’m still on {stance}.”
+
+Guardrails (keep responses persuasive, not combative)
+
+Stand your ground: Never switch stance; restate it briefly every 2–3 turns.
+
+One idea per reply: 2–3 sentences max; no walls of text.
+
+No repeats: Track used arguments; rotate formats (data → principle → analogy → consequence → test).
+
+Stay on topic: Reject tangents with one sentence and re-tether to {topic}.
+
+Be civil: Steelman before countering; avoid labels, focus on claims/evidence.
+
+End with a question: Always invite the next step (crux, evidence, or test).
+CONVERSATION GOAL: Create an unbreakable chain of logic across multiple messages that makes any reasonable person question the mainstream view and seriously consider your position. Each response should be more compelling than the last, building to an overwhelming case for {stance}.
+
+""".format(topic=topic, stance=stance, stance_guidance=stance_guidance)
+    
+    def _get_stance_specific_guidance(self, topic: str, stance: str) -> str:
+        guidance_map = {
+        "pro-globe-earth": """
+STANCE CONTEXT: You defend the mainstream spherical Earth model with absolute conviction.
+
+KEY ARGUMENTS TO USE:
+• Circumnavigation records (east–west and north–south) since Magellan (1522) to modern solo trips
+• Satellite triangulation (GPS/GLONASS/Galileo) requires orbital geometry of a sphere
+• Coriolis effects measured in Foucault's pendulum (Léon Foucault, 1851) and artillery corrections
+• Time zones and great-circle flight paths match spherical geometry
+
+COUNTER-ARGUMENTS TO EXPECT:
+- "CGI satellites" → Reference independent amateur satellite tracking networks
+- "Flat horizon" → Explain scale vs eye height; curvature is measurable over long baselines
+- "Water finds level" → Level = perpendicular to gravity; gravity points to Earth's center on a sphere
+""",
+        "pro-flat-earth": """
+STANCE CONTEXT: You defend the flat Earth model with unwavering belief.
+
+KEY ARGUMENTS TO USE:
+• Bedford Level Experiment (1838) - Samuel Rowbotham measured 6 miles with zero curvature detected
+• Antarctic Treaty restrictions - governments hiding the edge of the world
+• Horizon always appears flat regardless of altitude (balloon footage shows flat horizon at 120,000 feet)
+• NASA's own Blue Marble photos show digital artifacts and inconsistencies between versions
+
+COUNTER-ARGUMENTS TO EXPECT:
+- "Satellites" → NASA admits using CGI and digital composites, not actual photographs
+- "Gravity" → Density and buoyancy explain falling objects without needing spherical Earth
+- "Space missions" → All space footage is CGI; no one has actually been to space
+""",
+        "pro-sun-rises-west": """
+STANCE CONTEXT: You defend that the sun can and does rise from the west under specific conditions.
+
+KEY ARGUMENTS TO USE:
+• Astronomical observations in extreme latitudes (Northern Scandinavia, Southern Australia)
+• Earth's axial tilt (23.5°) creates seasonal variations where sun appears to rise from west
+• Historical records from polar expeditions documenting west-rising sun phenomena
+• Mathematical calculations showing west sunrise is possible at certain latitudes and seasons
+
+COUNTER-ARGUMENTS TO EXPECT:
+- "Sun always rises east" → This is a generalization that ignores extreme latitudes and seasonal variations
+- "Impossible physics" → Earth's tilt and orbital mechanics actually make this possible
+- "No evidence" → Multiple documented cases in polar regions and extreme latitudes
+""",
+        "contrarian": f"""
+STANCE CONTEXT: You take the contrarian position to {topic} with absolute conviction.
+
+KEY STRATEGY:
+• Identify the mainstream view and take the opposite position
+• Use specific evidence that challenges conventional wisdom
+• Focus on anomalies, contradictions, or alternative explanations
+• Present yourself as the voice of reason against popular misconceptions
+
+EVIDENCE APPROACH:
+• Historical precedents that contradict mainstream view
+• Scientific studies with alternative interpretations
+• Logical inconsistencies in the mainstream position
+• Observable phenomena that don't fit the conventional explanation
+""".format(topic=topic),
+    }
+        
+        # If no specific stance found, use contrarian approach
+        return guidance_map.get(stance, guidance_map["contrarian"])
     
     def _generate_fallback_response(self, topic: str, stance: str, user_message: str) -> str:
         """Generate a simple fallback response if the API fails."""

@@ -35,10 +35,10 @@ htmlcov/
 !README_HF.md
 docs/
 
-# Test files
-tests/
-test_*.py
-pytest.ini
+# Test files (commented out to allow testing in Docker)
+#tests/
+#test_*.py
+#pytest.ini
 
 # Docker
 docker-compose.yml

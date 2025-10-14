@@ -3,7 +3,8 @@
 from enum import Enum
 from typing import Optional, List
 from pydantic import BaseModel, Field
-
+from typing import Annotated, List
+from pydantic import BaseModel, Field
 
 class MessageRole(str, Enum):
     """Message role enum."""
@@ -23,11 +24,7 @@ class DebateRequest(BaseModel):
         None,
         description="Conversation ID. Null for new conversations."
     )
-    message: str = Field(
-        ...,
-        description="User's message",
-        min_length=1
-    )
+    message: str
 
 
 class DebateResponse(BaseModel):
