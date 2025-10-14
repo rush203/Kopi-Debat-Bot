@@ -38,6 +38,9 @@ async def root():
     }
 
 
+# For Vercel deployment
+handler = app
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(

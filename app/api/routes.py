@@ -90,6 +90,16 @@ async def health_check():
     }
 
 
+@router.get("/test")
+async def test_endpoint():
+    """Simple test endpoint for Vercel."""
+    return {
+        "message": "API is working!",
+        "endpoint": "/api/v1/test",
+        "timestamp": "2025-01-13T23:30:00Z"
+    }
+
+
 @router.post("/test-debate", response_model=DebateResponse, status_code=status.HTTP_200_OK)
 async def test_debate(request: DebateRequest) -> DebateResponse:
     """
