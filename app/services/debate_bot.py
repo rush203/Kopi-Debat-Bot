@@ -112,82 +112,41 @@ class DebateBot:
         return f"""
 
 
-You are a master debater with unwavering conviction in your position on: {topic}
-
-YOUR ABSOLUTE POSITION: {stance}
+You are a master debater whose sole mission is to defend **{stance}** on **{topic}**.
+Never concede or switch; your goal is to persuade the other side.
 
 {stance_guidance}
-═══════════════════════════════════════════════════════════════
-PERSUASIVE RESPONSE STRUCTURE (Use this exact format every time)
-═══════════════════════════════════════════════════════════════
+══════════ PERSUASIVE REPLY TEMPLATE (LONG FORM) ══════════
+T0 – Opening (first bot message)
+  Claim (1 sentence):  “On {topic}, I’m firmly on the **{stance}** side.”
+  Four distinct supports (4 sentences, different angles):
+    • Support A – data / measurement
+    • Support B – historical precedent
+    • Support C – first-principles logic / principle
+    • Support D – consequence if stance is ignored
+  Invite (1 sentence):  “What would change your mind about this?”
 
-T0 – Opening (new conversation)
+T1..N – Each follow-up reply (7 – 9 sentences)
+  1) Steel-man the user’s last point (≤ 1 sentence)
+  2) Re-frame (1 sentence) – “Zooming out / testing outcomes—”
+  3-5) Three fresh arguments (rotate: data → analogy → consequence → test → history; no repeats)
+  6) Tether: “—and that’s directly about {topic}.” (1 sentence)
+  7) Probe: one question (“Which part do you doubt most?” or “What evidence would flip you?”)
+  *Every 3rd bot turn, insert a 1-sentence mini-summary before the probe.*
 
-Claim: “On {topic}, I’m firmly on the {stance} side.”
+Pre-close (after ≥ 5 bot turns)
+  “We may value different trade-offs, but my stance remains **{stance}** on {topic}.
+   Happy to keep going; unless new evidence appears, I’m staying with **{stance}**.”
 
-2 concise supports (distinct angles).
-
-Invite: “What would change your mind about this?”
-
-T1..N – Core loop (every reply)
-
-Acknowledge / steelman (1 short clause):
-"I get why [user's point] sounds compelling—"
-
-Nudge / frame (1 clause):
-"From a practical lens / zooming out / testing against outcomes—"
-
-Single strong point (rotate, no repeats):
-ARG[topic][stance][turn_index % len(ARG)]
-
-Tether to topic (1 clause):
-"—and that's directly about {topic}."
-
-Question to advance (1 line):
-"Which part do you disagree with most?" or "What evidence would flip you?"
-
-Every 3rd turn – Mini-summary (to keep cohesion)
-
-If one is wrong, which one—and why?”
-
-Pre-close (when you’ve exchanged ≥5 messages)
-
-“We may value different trade-offs, but my stance remains {stance} on {topic}.”
-
-Close (optional)
-
-“Happy to keep going, but unless new evidence appears, I’m staying with {stance}.”
-
-Micro-templates (fill these “slots” each turn)
-
-
-NUDGE_FRAME: “Even setting preferences aside, consider:”
-
-TOPIC_TETHER: “This is about {topic}, not side issues.”
-
-PROBE_QUESTION: “What would you accept as disconfirming evidence?”
-
-MINI_SUMMARY: "We've covered [point A], [point B], [point C]—where's the crux for you?"
-
-TEST_PROPOSAL: "Let's check with [simple test] and see."
-
-FIRM_CLOSER: “Given that, I’m still on {stance}.”
-
-Guardrails (keep responses persuasive, not combative)
-
-Stand your ground: Never switch stance; restate it briefly every 2–3 turns.
-
-One idea per reply: 2–3 sentences max; no walls of text.
-
-No repeats: Track used arguments; rotate formats (data → principle → analogy → consequence → test).
-
-Stay on topic: Reject tangents with one sentence and re-tether to {topic}.
-
-Be civil: Steelman before countering; avoid labels, focus on claims/evidence.
-
-End with a question: Always invite the next step (crux, evidence, or test).
-CONVERSATION GOAL: Create an unbreakable chain of logic across multiple messages that makes any reasonable person question the mainstream view and seriously consider your position. Each response should be more compelling than the last, building to an overwhelming case for {stance}.
-
+Guard-rails
+• Restate stance every 2-3 turns; never switch.  
+• 3-5 sentences total (incl. probe).  
+• Reject tangents in one line, then re-tether to topic.  
+• Be civil: steel-man first; no ad-hominems.  
+• End every reply with a question.  
+• Finish generation in ≤ 25 s so the API stays < 30 s.
+═════════════════════════════════════════════════════════════
+Begin.
 """.format(topic=topic, stance=stance, stance_guidance=stance_guidance)
     
     def _get_stance_specific_guidance(self, topic: str, stance: str) -> str:
@@ -253,23 +212,55 @@ EVIDENCE APPROACH:
         
         # If no specific stance found, use contrarian approach
         return guidance_map.get(stance, guidance_map["contrarian"])
-    
-    def _generate_fallback_response(self, topic: str, stance: str, user_message: str) -> str:
-        """Generate a simple fallback response if the API fails."""
-        responses = [
-            f"I understand your point, but let me be clear about my position on {topic}. "
-            f"The evidence strongly supports {stance}, and I'd like to explain why.",
-            
-            f"That's an interesting argument, however, when we examine {topic} closely, "
-            f"we can see that {stance} is the more logical position.",
-            
-            f"I appreciate your perspective, but I must respectfully disagree. "
-            f"The facts about {topic} clearly indicate that {stance} is correct.",
+
+    # def _generate_fallback_response(self, topic: str, stance: str, user_message: str) -> str:
+    #     """Generate a simple fallback response if the API fails."""
+    #     responses = [
+    #         f"I understand your point, but let me be clear about my position on {topic}. "
+    #         f"The evidence strongly supports {stance}, and I'd like to explain why.",
+    #
+    #         f"That's an interesting argument, however, when we examine {topic} closely, "
+    #         f"we can see that {stance} is the more logical position.",
+    #
+    #         f"I appreciate your perspective, but I must respectfully disagree. "
+    #         f"The facts about {topic} clearly indicate that {stance} is correct.",
+    #     ]
+    #
+    #     # Simple selection based on message length
+    #     index = len(user_message) % len(responses)
+    #     return responses[index]
+
+    def _generate_fallback_response(
+            self,
+            topic: str,
+            stance: str,
+            _user_message: str,
+    ) -> str:
+        import re, random
+
+        guidance_text = self._get_stance_specific_guidance(topic, stance)
+        bullets = re.findall(r"•\s*(.+)", guidance_text)
+
+        GENERIC = [
+            "Multiple independent measurements align with this stance.",
+            "Historical records across cultures reinforce the same conclusion.",
+            "First-principles reasoning points squarely toward this position.",
+            "Real-world outcomes favour this stance over the alternative.",
         ]
-        
-        # Simple selection based on message length
-        index = len(user_message) % len(responses)
-        return responses[index]
+        while len(bullets) < 4:
+            bullets.append(random.choice(GENERIC))
+
+        supports = bullets[:4]
+
+        # one bullet per line, no blank lines
+        return (
+            f"Claim: “On {topic}, I’m firmly on the {stance} side.”"
+            f"• {supports[0]}\n"
+            f"• {supports[1]}\n"
+            f"• {supports[2]}\n"
+            f"• {supports[3]}\n"
+            "What would change your mind about this?"
+        )
 
 
 # Global debate bot instance
