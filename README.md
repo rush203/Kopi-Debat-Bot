@@ -17,7 +17,6 @@ Before you begin, ensure you have the following installed:
 
 - **Docker** (required): [Installation Guide](https://docs.docker.com/get-docker/)
 - **Docker Compose** (required): Usually included with Docker Desktop
-- **OpenAI API Key** (required): Get yours at [OpenAI Platform](https://platform.openai.com/api-keys)
 
 The `make install` command will check for these dependencies and provide installation instructions if missing.
 
