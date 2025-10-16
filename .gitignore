@@ -40,6 +40,11 @@ htmlcov/
 *.swo
 *~
 
+# build artifacts
+*.tar.gz
+*.tgz
+
+
 # Docker
 *.log
 
