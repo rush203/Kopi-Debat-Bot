@@ -1,10 +1,10 @@
 # Kopi Debate Bot 🗣️
 
-An AI-powered debate chatbot API that takes positions on topics and defends them persuasively, even if the position is unconventional (like defending flat earth theory). Built with FastAPI, OpenAI GPT-4, and Docker.
+An AI-powered debate chatbot API that takes positions on topics and defends them persuasively, even if the position is unconventional (like defending flat earth theory). Built with FastAPI, OpenRouter AI, and Docker. Hosted on Railway.
 
 ## 🌟 Features
 
-- **Persuasive Debate**: Uses OpenAI GPT-4 to generate convincing, coherent arguments
+- **Persuasive Debate**: Uses OpenRouter AI models to generate convincing, coherent arguments
 - **Position Defense**: Maintains stance throughout conversation regardless of counterarguments
 - **Conversation Management**: Tracks multiple simultaneous debates with conversation history
 - **Professional Architecture**: Clean separation of concerns, type safety, comprehensive tests
@@ -34,11 +34,11 @@ make install
 
 ### 2. Configure Environment
 
-Edit the `.env` file and add your OpenAI API key:
+Edit the `.env` file and add your OpenRouter API key:
 
 ```bash
 # .env
-OPENAI_API_KEY=sk-your-actual-openai-api-key-here
+OPENAI_API_KEY=sk-or-your-actual-openrouter-api-key-here
 ```
 
 ### 3. Run the Service
@@ -194,7 +194,7 @@ All configuration is managed through environment variables in the `.env` file:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `OPENAI_MODEL` | OpenAI model to use | `gpt-4-turbo-preview` |
+| `OPENAI_MODEL` | OpenRouter model to use | `meta-llama/llama-3.1-8b-instruct` |
 | `OPENAI_TEMPERATURE` | Response creativity (0.0-2.0) | `0.8` |
 | `OPENAI_MAX_TOKENS` | Max tokens per response | `500` |
 | `API_HOST` | API host address | `0.0.0.0` |
@@ -260,7 +260,7 @@ Kopi/
 
 #### 1. **Technology Stack**
 - **FastAPI**: Modern, fast, with automatic API documentation and async support
-- **OpenAI GPT-4**: State-of-the-art language model for persuasive, coherent responses
+- **OpenRouter AI**: Access to multiple AI models for persuasive, coherent responses
 - **Pydantic**: Type safety and validation
 - **Docker**: Consistent deployment environment
 - **Pytest**: Comprehensive testing framework
@@ -287,7 +287,7 @@ Kopi/
 - Graceful degradation with fallback responses
 
 #### 6. **Testing Strategy**
-- Unit tests with mocked OpenAI API (to avoid costs/latency)
+- Unit tests with mocked OpenRouter API (to avoid costs/latency)
 - Integration tests for full API flow
 - Test coverage for edge cases
 
@@ -362,6 +362,14 @@ make run
 
 ### Production Deployment
 
+The application is currently hosted on **Railway** for production deployment. Railway provides:
+
+- **Automatic deployments** from GitHub
+- **Environment variable management**
+- **Built-in monitoring and logging**
+- **Automatic scaling**
+- **Custom domains support**
+
 For production deployment, consider:
 
 1. **Use environment-specific .env files**
@@ -369,7 +377,7 @@ For production deployment, consider:
 3. **Use Redis for conversation storage**
 4. **Add monitoring and logging (e.g., Sentry, DataDog)**
 5. **Deploy behind a reverse proxy (Nginx)**
-6. **Use managed container service (ECS, GKE, Cloud Run)**
+6. **Use managed container service (ECS, GKE, Cloud Run, Railway)**
 
 Example docker-compose override for production:
 
@@ -405,7 +413,7 @@ cat .env | grep OPENAI_API_KEY
 
 ### API returns 500 errors
 
-- Verify OpenAI API key is valid
+- Verify OpenRouter API key is valid
 - Check API key has sufficient credits
 - Review logs: `make logs`
 
@@ -443,7 +451,8 @@ Built with professional standards following the Kopi Challenge requirements.
 ## 🙏 Acknowledgments
 
 - [FastAPI](https://fastapi.tiangolo.com/) - Modern web framework
-- [OpenAI](https://openai.com/) - GPT-4 API
+- [OpenRouter](https://openrouter.ai/) - AI model access platform
+- [Railway](https://railway.app/) - Cloud deployment platform
 - [Pydantic](https://pydantic-docs.helpmanual.io/) - Data validation
 
 ---

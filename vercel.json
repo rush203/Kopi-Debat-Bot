@@ -1,7 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/debate",      "destination": "/api/debate" },
-    { "source": "/health",      "destination": "/api/health" },
-    { "source": "/test-debate", "destination": "/api/v1/test-debate" }
-  ]
-}
